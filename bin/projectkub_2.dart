@@ -117,5 +117,8 @@ Future<void> AddNewExpense() async {
   print(res.body);
 }
 Future<void> DeleteAnExpense() async {
-  
+  stdout.write("Enter expense ID to delete: ");
+  final id = stdin.readLineSync();
+  final res = await http.delete(Uri.parse("$baseUrl/DeleteAnExpense/$id"));
+  print(res.body);
 }
