@@ -89,7 +89,18 @@ Future<void> ShowallEXpenseToday() async {
   }
 }
 Future<void> SearchExpense() async {
-
+  stdout.write("Enter keyword: ");
+  final kw = stdin.readLineSync();
+  final res = await http.get(Uri.parse("$baseUrl/SearchExpense?q=$kw"));
+  if (res.statusCode == 200) {
+    final data = jsonDecode(res.body);
+    print("===== Search Results =====");
+    for (var e in data) {
+      print("${e['id']}. ${e['item']} - ${e['paid']} THB [${e['date']}]");
+    }
+  } else {
+    print("Error: ${res.body}");
+  }
 }
 Future<void> AddNewExpense() async {
 
