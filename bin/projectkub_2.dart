@@ -1,7 +1,8 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-// for stdin
 import 'dart:io';
+
+final baseUrl = "http://localhost:3000";
 
 void main() async {
   await login();
@@ -9,37 +10,35 @@ void main() async {
 
 Future<void> login() async {
   print("===== Login =====");
-  // Get username and password
   stdout.write("Username: ");
   String? username = stdin.readLineSync()?.trim();
   stdout.write("Password: ");
   String? password = stdin.readLineSync()?.trim();
+
   if (username == null || password == null) {
     print("Incomplete input");
     return;
   }
 
-  final body = {"username": username, "password": password};
-  final url = Uri.parse('http://localhost:3000/login');
-  final response = await http.post(url, body: body);
-  // note: if body is Map, it is encoded by "application/x-www-form-urlencoded" not JSON
+  final url = Uri.parse('$baseUrl/login');
+  final response = await http.post(
+    url,
+    headers: {"Content-Type": "application/json"},
+    body: jsonEncode({"username": username, "password": password}),
+  );
+
   if (response.statusCode == 200) {
-    // the response.body is String
-    final result = response.body;
-    Choose(username);
-    // เข้า Function Here
-  } else if (response.statusCode == 401 || response.statusCode == 500) {
-    final result = response.body;
-    print(result);
+    print(response.body);
+    await Choose(username);
   } else {
-    print("Unknown error");
+    print("Error: ${response.body}");
   }
 }
 
-Future<void> Choose(name) async {
+Future<void> Choose(String name) async {
   while (true) {
     print("============ Expense Tracking App ============");
-    print("WElcome $name");
+    print("Welcome $name");
     print(
       " 1. All expenses \n 2. Today's expense \n 3. Search expense \n 4. Add new expense \n 5. Delete an expense \n 6. Exit",
     );
@@ -49,22 +48,25 @@ Future<void> Choose(name) async {
     final choice = int.tryParse(input ?? "");
 
     if (choice == 1) {
-      ShowallEXpense();
+      await ShowallExpense();
     } else if (choice == 2) {
-      ShowallEXpenseToday();
+      await ShowExpenseToday();
     } else if (choice == 3) {
-      SearchExpense();
+      await SearchExpense();
     } else if (choice == 4) {
-      AddNewExpense();
+      await AddNewExpense();
     } else if (choice == 5) {
-      DeleteAnExpense();
-    } else {
+      await DeleteAnExpense();
+    } else if (choice == 6) {
       print("--- bye ---");
+      break;
+    } else {
+      print("Invalid choice");
     }
   }
 }
-final baseUrl = "http://localhost:3000/";
-Future<void> ShowallEXpense() async {
+
+Future<void> ShowallExpense() async {
   final res = await http.get(Uri.parse("$baseUrl/Expense"));
   if (res.statusCode == 200) {
     final data = jsonDecode(res.body);
@@ -76,7 +78,8 @@ Future<void> ShowallEXpense() async {
     print("Error: ${res.body}");
   }
 }
-Future<void> ShowallEXpenseToday() async {
+
+Future<void> ShowExpenseToday() async {
   final res = await http.get(Uri.parse("$baseUrl/ExpenseToday"));
   if (res.statusCode == 200) {
     final data = jsonDecode(res.body);
@@ -88,6 +91,7 @@ Future<void> ShowallEXpenseToday() async {
     print("Error: ${res.body}");
   }
 }
+
 Future<void> SearchExpense() async {
   stdout.write("Enter keyword: ");
   final kw = stdin.readLineSync();
@@ -102,6 +106,7 @@ Future<void> SearchExpense() async {
     print("Error: ${res.body}");
   }
 }
+
 Future<void> AddNewExpense() async {
   stdout.write("Item: ");
   final item = stdin.readLineSync();
@@ -116,6 +121,7 @@ Future<void> AddNewExpense() async {
   );
   print(res.body);
 }
+
 Future<void> DeleteAnExpense() async {
   stdout.write("Enter expense ID to delete: ");
   final id = stdin.readLineSync();
