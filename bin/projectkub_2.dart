@@ -8,6 +8,8 @@ void main() async {
   await login();
 }
 
+int? userId; // global variable
+
 Future<void> login() async {
   print("===== Login =====");
   stdout.write("Username: ");
@@ -28,7 +30,9 @@ Future<void> login() async {
   );
 
   if (response.statusCode == 200) {
-    print(response.body);
+    final data = jsonDecode(response.body);
+    print(data['message']);
+    userId = data['userId'];   // ✅ เก็บ userId
     await Choose(username);
   } else {
     print("Error: ${response.body}");
@@ -117,7 +121,12 @@ Future<void> AddNewExpense() async {
   final res = await http.post(
     Uri.parse("$baseUrl/AddnewExpense"),
     headers: {"Content-Type": "application/json"},
-    body: jsonEncode({"item": item, "paid": paid, "date": date}),
+    body: jsonEncode({
+      "item": item,
+      "paid": paid,
+      "date": date,
+      "user_id": userId,   // ✅ ส่ง userId ไปด้วย
+    }),
   );
   print(res.body);
 }
