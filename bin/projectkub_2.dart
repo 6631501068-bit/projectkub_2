@@ -103,7 +103,18 @@ Future<void> SearchExpense() async {
   }
 }
 Future<void> AddNewExpense() async {
+  stdout.write("Item: ");
+  final item = stdin.readLineSync();
+  stdout.write("Paid: ");
+  final paid = stdin.readLineSync();
+  final date = DateTime.now().toIso8601String().split('T')[0];
 
+  final res = await http.post(
+    Uri.parse("$baseUrl/AddnewExpense"),
+    headers: {"Content-Type": "application/json"},
+    body: jsonEncode({"item": item, "paid": paid, "date": date}),
+  );
+  print(res.body);
 }
 Future<void> DeleteAnExpense() async {
   
