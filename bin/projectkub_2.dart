@@ -77,7 +77,16 @@ Future<void> ShowallEXpense() async {
   }
 }
 Future<void> ShowallEXpenseToday() async {
-
+  final res = await http.get(Uri.parse("$baseUrl/ExpenseToday"));
+  if (res.statusCode == 200) {
+    final data = jsonDecode(res.body);
+    print("===== Today's Expenses =====");
+    for (var e in data) {
+      print("${e['id']}. ${e['item']} - ${e['paid']} THB [${e['date']}]");
+    }
+  } else {
+    print("Error: ${res.body}");
+  }
 }
 Future<void> SearchExpense() async {
 
